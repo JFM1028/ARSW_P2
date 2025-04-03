@@ -1,59 +1,50 @@
-/*
- * Copyright (C) 2016 Pivotal Software, Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-package edu.eci.arsw.myrestaurant.restcontrollers;
+package edu.eci.arsw.myrestaurant.controllers;
 
+import edu.eci.arsw.myrestaurant.beans.BillCalculator;
 import edu.eci.arsw.myrestaurant.model.Order;
-import edu.eci.arsw.myrestaurant.model.ProductType;
-import edu.eci.arsw.myrestaurant.model.RestaurantProduct;
-import edu.eci.arsw.myrestaurant.services.RestaurantOrderServices;
-import edu.eci.arsw.myrestaurant.services.RestaurantOrderServicesStub;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import edu.eci.arsw.myrestaurant.services.OrderServices;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-
-
-/**
- *
- * @author hcadavid
- * @author JFMD
- */
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/orders")
 public class OrdersAPIController {
 
     @Autowired
-    private RestaurantOrderServices orderServices;
+    private OrderServices orderServices;
+
+    @Autowired
+    private BillCalculator billCalculator;
 
     @GetMapping
-    public Order getOrders() {
-        return orderServices.getTableOrder(1);
+    public List<OrderDTO> getAllOrders() {
+        List<Order> orders = orderServices.getOrders();
+        return orders.stream().map(order -> {
+            double total = billCalculator.calculateBill(order);
+            return new OrderDTO(order, total);
+        }).collect(Collectors.toList());
+    }
+
+    public static class OrderDTO {
+        private Order order;
+        private double total;
+
+        public OrderDTO(Order order, double total) {
+            this.order = order;
+            this.total = total;
+        }
+
+        public Order getOrder() {
+            return order;
+        }
+
+        public double getTotal() {
+            return total;
+        }
     }
 }

@@ -6,7 +6,7 @@ import edu.eci.arsw.myrestaurant.beans.BillCalculator;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
-
+@service
 public class BasicBillCalculator implements BillCalculator {
 
 	@Override
