@@ -53,7 +53,7 @@ public class OrdersAPIController {
     private RestaurantOrderServices orderServices;
 
     @GetMapping
-    public Set<Order> getOrders() {
-        return RestaurantOrderServices.getTableOrder();
+    public Order getOrders() {
+        return orderServices.getTableOrder(1);
     }
 }
